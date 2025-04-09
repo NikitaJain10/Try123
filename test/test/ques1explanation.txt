@@ -1,0 +1,130 @@
+﻿Line-by-Line Explanation:
+🔹 Line 1:
+
+int failCount = 0;
+Purpose: Keeps track of consecutive fail events within the 5-minute window.
+
+🔹 Line 2:
+
+int firstFailMinutes = -1;
+Purpose: Stores the time (in total minutes since midnight) of the first fail in the current fail sequence.
+
+Initial value: -1 indicates that no fail has been recorded yet.
+
+🔹 Line 3:
+
+int i = 0;
+Purpose: Index used to manually parse the input string character by character.
+
+🔹 Line 4:
+
+while (i < input.Length)
+Purpose: Loops through the entire input string until all events have been processed.
+
+🔹 Line 5–8:
+
+string action = "";
+while (i < input.Length && input[i] != '@')
+{
+    action += input[i];
+    i++;
+}
+Purpose: Parses the action part ("fail" or "success") from the current event string.
+
+Stops reading when it hits the @ symbol.
+
+🔹 Line 9:
+
+i++; // Skip '@'
+Purpose: Skips the '@' to begin parsing the timestamp.
+
+🔹 Line 10:
+int hour = (input[i] - '0') * 10 + (input[i + 1] - '0');
+Purpose: Extracts the hour part of the timestamp by converting characters to digits.
+
+🔹 Line 11:
+
+i += 3; // Skip "HH:"
+Purpose: Skips the hour digits and the colon ':'.
+
+🔹 Line 12:
+
+int minute = (input[i] - '0') * 10 + (input[i + 1] - '0');
+Purpose: Extracts the minute part of the timestamp.
+
+🔹 Line 13:
+
+i += 2;
+Purpose: Advances the index past the minute part.
+
+🔹 Line 14–15:
+
+if (i < input.Length && input[i] == ',') i++;
+Purpose: If a comma is present, move to the next event.
+
+🔹 Line 16:
+
+int currentMinutes = hour * 60 + minute;
+Purpose: Converts the full timestamp (HH:MM) to total minutes since midnight, which makes time comparisons easy.
+
+🔹 Line 17–21:
+
+if (action == "success")
+{
+    failCount = 0;
+    firstFailMinutes = -1;
+}
+Purpose: If the login was successful:
+
+Reset the fail count and fail timestamp.
+
+🔹 Line 22:
+
+else if (action == "fail")
+Purpose: If the action was a failure, check for locking conditions.
+
+🔹 Line 23–26:
+
+if (failCount == 0)
+{
+    failCount = 1;
+    firstFailMinutes = currentMinutes;
+}
+Purpose: If this is the first fail, start a new fail sequence.
+
+🔹 Line 27–37:
+
+else
+{
+    if (currentMinutes - firstFailMinutes <= 5)
+    {
+        failCount++;
+        if (failCount == 3)
+        {
+            string lockedTime = ((hour < 10) ? "0" : "") + hour.ToString() + ":" +
+                                ((minute < 10) ? "0" : "") + minute.ToString();
+            return "LOCKED at " + lockedTime;
+        }
+    }
+    else
+    {
+        failCount = 1;
+        firstFailMinutes = currentMinutes;
+    }
+}
+Explanation:
+
+If this fail happened within 5 minutes of the first fail:
+
+Increment the fail count.
+
+If this is the third fail, return "LOCKED at HH:MM".
+
+If it’s outside the 5-minute window:
+
+Start a new fail sequence with the current fail.
+
+🔹 Line 38:
+
+return "OK";
+Purpose: If no lock condition is met after all events are processed, return "OK".
