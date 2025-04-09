@@ -1,0 +1,60 @@
+﻿Line-by-Line Explanation of Get Method
+🔸 if (!map.ContainsKey(key)) return -1;
+What it does: Checks if the key exists in the cache.
+
+Why: If the key isn't present, the cache doesn't store that item, so we return -1 to indicate a miss.
+
+🔸 Node node = map[key];
+What it does: Retrieves the node (from the doubly linked list) that stores the given key and its value.
+
+Why: The map (dictionary) stores key → Node pairs. This gives O(1) access to any cached element.
+
+🔸 MoveToHead(node);
+What it does: Moves this node to the head of the doubly linked list, making it the most recently used item.
+
+Why: Since we're accessing this item, it should not be evicted soon. LRU means we always remove the least recently used item, so we bring the current item to the front.
+
+🔸 return node.Value;
+What it does: Returns the value stored in the node.
+
+Why: This is the actual value we wanted when we called Get(key).
+
+
+ Line-by-Line Explanation of put method
+🔹 if (map.ContainsKey(key))
+Check if the key already exists in the cache.
+
+If it does, we just need to update the value and move it to the front (MRU).
+
+🔹 Node node = map[key];
+Retrieve the corresponding node from the dictionary.
+
+🔹 node.Value = value;
+Update the node's value.
+
+🔹 MoveToHead(node);
+Since this key was just used/updated, it's now the most recently used, so we move it to the front.
+
+🔹 else – If the key does not exist
+🔹 if (map.Count == capacity)
+If the cache is already full, we need to evict the LRU node to make space.
+
+🔹 Node lru = tail.Prev;
+Get the last real node in the doubly linked list (just before the dummy tail node).
+
+This is the Least Recently Used node.
+
+🔹 RemoveNode(lru);
+Detach the LRU node from the doubly linked list.
+
+🔹 map.Remove(lru.Key);
+Also remove the key from the dictionary to fully evict it.
+
+🔹 Node newNode = new Node { Key = key, Value = value };
+Create a new node for the new key-value pair.
+
+🔹 map[key] = newNode;
+Add the new node to the dictionary.
+
+🔹 AddToHead(newNode);
+Add the new node at the head of the list so it becomes the most recently used.
