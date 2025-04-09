@@ -1,0 +1,120 @@
+using System;
+using System.Collections.Generic;
+
+public class LRUCache
+{
+    private class Node
+    {
+        public int Key;
+        public int Value;
+        public Node Prev;
+        public Node Next;
+    }
+
+    private readonly int capacity;
+    private Dictionary<int, Node> map;
+    private Node head;
+    private Node tail;
+
+    public LRUCache(int capacity)
+    {
+        this.capacity = capacity;
+        map = new Dictionary<int, Node>();
+
+        head = new Node();
+        tail = new Node();
+        head.Next = tail;
+        tail.Prev = head;
+    }
+
+    public int Get(int key)
+    {
+        if (!map.ContainsKey(key))
+            return -1;
+
+        Node node = map[key];
+        MoveToHead(node);
+        return node.Value;
+    }
+
+    public void Put(int key, int value)
+    {
+        if (map.ContainsKey(key))
+        {
+            Node node = map[key];
+            node.Value = value;
+            MoveToHead(node);
+        }
+        else
+        {
+            if (map.Count == capacity)
+            {
+                Node lru = tail.Prev;
+                RemoveNode(lru);
+                map.Remove(lru.Key);
+            }
+
+            Node newNode = new Node { Key = key, Value = value };
+            map[key] = newNode;
+            AddToHead(newNode);
+        }
+    }
+
+    private void AddToHead(Node node)
+    {
+        node.Prev = head;
+        node.Next = head.Next;
+        head.Next.Prev = node;
+        head.Next = node;
+    }
+
+    private void RemoveNode(Node node)
+    {
+        node.Prev.Next = node.Next;
+        node.Next.Prev = node.Prev;
+    }
+
+    private void MoveToHead(Node node)
+    {
+        RemoveNode(node);
+        AddToHead(node);
+    }
+
+    public void PrintCache()
+    {
+        Console.Write("Cache: ");
+        Node current = head.Next;
+        while (current != tail)
+        {
+            Console.Write($"{{{current.Key}={current.Value}}} ");
+            current = current.Next;
+        }
+        Console.WriteLine();
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        LRUCache cache = new LRUCache(3);
+
+        cache.Put(1, 10);  // Cache: {1=10}
+        cache.PrintCache();
+
+        cache.Put(2, 20);  // Cache: {1=10, 2=20}
+        cache.PrintCache();
+
+        cache.Put(3, 30);  // Cache: {1=10, 2=20, 3=30}
+        cache.PrintCache();
+
+        Console.WriteLine("Get(1): " + cache.Get(1)); // Prints: 10
+        cache.PrintCache(); // Cache becomes: {2=20, 3=30, 1=10}
+
+        cache.Put(4, 40);  // Cache: {3=30, 1=10, 4=40} - removes key 2
+        cache.PrintCache();
+
+        Console.WriteLine("Get(2): " + cache.Get(2)); // Prints: -1
+        cache.PrintCache();
+    }
+}
