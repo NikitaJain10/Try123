@@ -1,0 +1,79 @@
+using System;
+
+class LoginAttemptTracker
+{
+    public static string Track(string input)
+    {
+        int failCount = 0;
+        int firstFailMinutes = -1;
+
+        int i = 0;
+        while (i < input.Length)
+        {
+            // Parse action
+            string action = "";
+            while (i < input.Length && input[i] != '@')
+            {
+                action += input[i];
+                i++;
+            }
+            i++; // Skip '@'
+
+            // Parse hour
+            int hour = (input[i] - '0') * 10 + (input[i + 1] - '0');
+            i += 3; // Skip "HH:"
+            // Parse minute
+            int minute = (input[i] - '0') * 10 + (input[i + 1] - '0');
+            i += 2;
+
+            // Skip comma
+            if (i < input.Length && input[i] == ',') i++;
+
+            int currentMinutes = hour * 60 + minute;
+
+            if (action == "success")
+            {
+                // Reset on success
+                failCount = 0;
+                firstFailMinutes = -1;
+            }
+            else if (action == "fail")
+            {
+                if (failCount == 0)
+                {
+                    failCount = 1;
+                    firstFailMinutes = currentMinutes;
+                }
+                else
+                {
+                    // Check if this fail is within 5 minutes of the first fail
+                    if (currentMinutes - firstFailMinutes <= 5)
+                    {
+                        failCount++;
+                        if (failCount == 3)
+                        {
+                            string lockedTime = ((hour < 10) ? "0" : "") + hour.ToString() + ":"
+                                              + ((minute < 10) ? "0" : "") + minute.ToString();
+                            return "LOCKED at " + lockedTime;
+                        }
+                    }
+                    else
+                    {
+                        // Reset fail sequence with current fail
+                        failCount = 1;
+                        firstFailMinutes = currentMinutes;
+                    }
+                }
+            }
+        }
+
+        return "OK";
+    }
+
+    public static void Main()
+    {
+        Console.WriteLine(Track("success@10:00,fail@10:01,fail@10:05,success@10:10")); // OK
+        Console.WriteLine(Track("fail@10:00,fail@10:06,success@10:07")); // OK
+        Console.WriteLine(Track("fail@09:55,fail@09:56,success@09:58,fail@10:01,fail@10:04,fail@10:05")); // LOCKED at 10:05
+    }
+}
