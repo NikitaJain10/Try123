@@ -1,3 +1,27 @@
-........
-hello nikku
-Hello Mr.Kumar Divij
+Question:01
+you are tasked with building a login attempt tracker for a system that locksusers out after 3 consecutive failed login attempts within a 5 minute window.
+
+Track consecutive "fail" attempts.
+
+if there are 3 fails within 5 minutes return-LOCKED at<time of 3rd fail>
+
+If the attempts dont meet the lock criteria, return - OK 
+
+RUles:
+A "Success" resets the failure count
+timestamps are in chronological order
+you cannot use collections like array or lists
+you must manually parse timestamps.
+do not use DateTime.Parse,split(),or LINQ
+
+Example1:
+Input: "success@10:00,fail@10:01,fail@10:05,success@10:10"
+Output:"LOCKED at 10:05"
+
+Example2:
+Input: "fail@10:00,fail@10:06,success@10:07"
+Output:"OK"
+
+Example3:
+Input: "fail@09:55,fail@09:56,success@09:58,fail@10:01,fail@10:04"
+Output:"LOCKED at 10:04"
